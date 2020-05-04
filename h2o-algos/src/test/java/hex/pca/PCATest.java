@@ -1,6 +1,7 @@
 package hex.pca;
 
 import hex.DataInfo;
+import hex.Model;
 import hex.SplitFrame;
 import hex.generic.Generic;
 import hex.generic.GenericModel;
@@ -105,13 +106,14 @@ public class PCATest extends TestUtil {
       pcaParameters._transform = DataInfo.TransformType.NONE;
       pcaParameters._pca_method = PCAParameters.Method.GramSVD;
       pcaParameters._seed = 12345;
+      PCAParameters pcaParameters2 = (PCAParameters) pcaParameters.clone(); 
       modelNok = new PCA(pcaParameters).trainModel().get();
       Scope.track_generic(modelNok);
       score = modelNok.score(train);
       Scope.track(score);
-      
-      pcaParameters._k=1;
-      modelK = new PCA(pcaParameters).trainModel().get();
+
+      pcaParameters2._k=1;
+      modelK = new PCA(pcaParameters2).trainModel().get();
       Scope.track_generic(modelK);
       scoreK = modelK.score(train);
       Scope.track(scoreK);
@@ -310,6 +312,7 @@ public class PCATest extends TestUtil {
           pcaParameters._transform = std;
           pcaParameters._max_iterations = 1000;
           pcaParameters._pca_method = PCAParameters.Method.Power;
+          pcaParameters._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
 
           model = new PCA(pcaParameters).trainModel().get();
 

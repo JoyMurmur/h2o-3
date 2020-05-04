@@ -1,9 +1,6 @@
 package hex.glrm;
 
-import hex.CreateFrame;
-import hex.DataInfo;
-import hex.ModelMetrics;
-import hex.SplitFrame;
+import hex.*;
 import hex.genmodel.algos.glrm.GlrmInitialization;
 import hex.genmodel.algos.glrm.GlrmLoss;
 import hex.genmodel.algos.glrm.GlrmRegularizer;
@@ -500,6 +497,7 @@ public class GLRMTest extends TestUtil {
       parms._gamma_x = parms._gamma_y = 1;
       parms._regularization_x = GlrmRegularizer.OneSparse;
       parms._regularization_y = GlrmRegularizer.NonNegative;
+      parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       try {
         job = new GLRM(parms);
         model = job.trainModel().get();
@@ -516,6 +514,7 @@ public class GLRMTest extends TestUtil {
       parms._gamma_x = 1; parms._gamma_y = 0;
       parms._regularization_x = GlrmRegularizer.UnitOneSparse;
       parms._regularization_y = GlrmRegularizer.None;
+      parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       try {
         job = new GLRM(parms);
         model = job.trainModel().get();
@@ -532,6 +531,7 @@ public class GLRMTest extends TestUtil {
       parms._gamma_x = 1; parms._gamma_y = 0;
       parms._regularization_x = GlrmRegularizer.UnitOneSparse;
       parms._regularization_y = GlrmRegularizer.None;
+      parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       try {
         job = new GLRM(parms);
         model = job.trainModel().get();
@@ -659,13 +659,14 @@ public class GLRMTest extends TestUtil {
       parms._regularization_x = GlrmRegularizer.Quadratic;
       parms._regularization_y = GlrmRegularizer.Quadratic;
       parms._recover_svd = true;
+      GLRMParameters paramsInitialClone = (GLRMParameters) parms.clone(); 
       GLRM glrmParms = new GLRM(parms);
       modelN = glrmParms.trainModel().get();
       scoreN = modelN.score(train);
       Scope.track(scoreN);
       Scope.track_generic(modelN);
 
-      GLRM glrmParmsW = new GLRM(parms);
+      GLRM glrmParmsW = new GLRM(paramsInitialClone);
       glrmParmsW.setWideDataset(true);  // force to treat dataset as wide even though it is not.
       modelW = glrmParmsW.trainModel().get();
       scoreW = modelW.score(train);
@@ -716,6 +717,7 @@ public class GLRMTest extends TestUtil {
       Scope.track(scoreN);
       Scope.track_generic(modelN);
 
+      parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       GLRM glrmParmsW = new GLRM(parms);
       glrmParmsW.setWideDataset(true);  // force to treat dataset as wide even though it is not.
       modelW = glrmParmsW.trainModel().get();

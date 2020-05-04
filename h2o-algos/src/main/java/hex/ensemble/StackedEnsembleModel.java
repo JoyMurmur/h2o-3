@@ -48,9 +48,6 @@ public class StackedEnsembleModel extends Model<StackedEnsembleModel,StackedEnse
     if (_parms._metalearner_fold_assignment == AUTO) {
       _parms._metalearner_fold_assignment = Random;
     }
-    if (_parms._metalearner_algorithm == Metalearner.Algorithm.AUTO) {
-      _parms._metalearner_algorithm = Metalearner.Algorithm.glm;
-    }
   }
   
   public static class StackedEnsembleParameters extends Model.Parameters {

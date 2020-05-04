@@ -1,6 +1,7 @@
 package hex.glm;
 
 import hex.CreateFrame;
+import hex.Model;
 import hex.ModelMetricsBinomialGLM;
 import hex.SplitFrame;
 import hex.glm.GLMModel.GLMParameters;
@@ -356,6 +357,7 @@ public class GLMBasicTestBinomial extends TestUtil {
     GLMModel m = null;
     for(Solver s:new Solver[]{Solver.IRLSM,Solver.COORDINATE_DESCENT}) {
       parms._solver = s;
+      parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       try {
         m = new GLM(parms).trainModel().get();
         GLMTest.testScoring(m, _abcd);
@@ -477,6 +479,7 @@ public class GLMBasicTestBinomial extends TestUtil {
         Frame scoreTrain = null, scoreTest = null;
         try {
           params._solver = s;
+          params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
           System.out.println("SOLVER = " + s);
           model = new GLM(params).trainModel().get();
           HashMap<String, Double> coefs = model.coefficients();
@@ -640,6 +643,7 @@ public class GLMBasicTestBinomial extends TestUtil {
       Frame scoreTrain = null, scoreTest = null;
       try {
         params._solver = s;
+        params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
         System.out.println("SOLVER = " + s);
         model = new GLM( params).trainModel().get();
         HashMap<String, Double> coefs = model.coefficients();
@@ -782,11 +786,13 @@ public class GLMBasicTestBinomial extends TestUtil {
           params._gradient_epsilon = 1e-8;
           params._objective_epsilon = 0;
           params._missing_values_handling = MissingValuesHandling.Skip;
+          params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
           System.out.println("SOLVER = " + s);
           model = new GLM(params).trainModel().get();
           params = (GLMParameters) params.clone();
           params._train = _prostateTrainUpsampled._key;
           params._weights_column = null;
+          params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
           modelUpsampled = new GLM(params).trainModel().get();
           HashMap<String, Double> coefs = model.coefficients();
           HashMap<String, Double> coefsUpsampled = modelUpsampled.coefficients();
@@ -878,19 +884,19 @@ public class GLMBasicTestBinomial extends TestUtil {
 //    1.31814009  0.82918839  0.63285077  0.02949062  0.00000000  0.83011321
     String [] cfs1 = new String [] {"Intercept", "AGE", "DPROS.b",    "DPROS.c",     "DPROS.d",  "DCAPS.b",  "PSA",      "VOL", "GLEASON"};
     double [] vals = new double [] {-7.85142421,   0.0,    0.93030614,   1.31814009,    0.82918839, 0.63285077, 0.02949062, 0.0,    0.83011321};
-    GLMParameters params = new GLMParameters(Family.binomial);
-    params._response_column = "CAPSULE";
-    params._ignored_columns = new String[]{"ID",};
-    params._train = _prostateTrain._key;
-    params._lambda = new double[]{0};
-    params._alpha = new double[]{0};
-    params._standardize = false;
-    params._non_negative = true;
-    params._intercept = true;
-    params._objective_epsilon = 1e-10;
-    params._gradient_epsilon = 1e-6;
-    params._max_iterations = 10000; // not expected to reach max iterations here
     for(Solver s:new Solver[]{Solver.IRLSM,Solver.L_BFGS, Solver.COORDINATE_DESCENT}) {
+      GLMParameters params = new GLMParameters(Family.binomial);
+      params._response_column = "CAPSULE";
+      params._ignored_columns = new String[]{"ID",};
+      params._train = _prostateTrain._key;
+      params._lambda = new double[]{0};
+      params._alpha = new double[]{0};
+      params._standardize = false;
+      params._non_negative = true;
+      params._intercept = true;
+      params._objective_epsilon = 1e-10;
+      params._gradient_epsilon = 1e-6;
+      params._max_iterations = 10000; // not expected to reach max iterations here
       Frame scoreTrain = null, scoreTest = null;
       try {
         params._solver = s;
@@ -931,19 +937,19 @@ public class GLMBasicTestBinomial extends TestUtil {
 //    0.000000000 0.000000000 0.680406869 0.007137494 0.000000000 0.000000000
     String [] cfs1 = new String [] {"Intercept", "AGE", "DPROS.b",    "DPROS.c",     "DPROS.d",  "DCAPS.b",   "PSA",      "VOL", "GLEASON", "RACE.R1"};
     double [] vals = new double [] { 0.0,         0.0,   0.0,          0,             0.0,        0.680406869, 0.007137494, 0.0,  0.0,       0.240953925};
-    GLMParameters params = new GLMParameters(Family.binomial);
-    params._response_column = "CAPSULE";
-    params._ignored_columns = new String[]{"ID",};
-    params._train = _prostateTrain._key;
-    params._lambda = new double[]{0};
-    params._alpha = new double[]{0};
-    params._standardize = false;
-    params._non_negative = true;
-    params._intercept = false;
-    params._objective_epsilon = 1e-6;
-    params._gradient_epsilon = 1e-5;
-    params._max_iterations = 150; // not expected to reach max iterations here
     for(Solver s:new Solver[]{Solver.AUTO,Solver.IRLSM,Solver.L_BFGS, Solver.COORDINATE_DESCENT}) {
+      GLMParameters params = new GLMParameters(Family.binomial);
+      params._response_column = "CAPSULE";
+      params._ignored_columns = new String[]{"ID",};
+      params._train = _prostateTrain._key;
+      params._lambda = new double[]{0};
+      params._alpha = new double[]{0};
+      params._standardize = false;
+      params._non_negative = true;
+      params._intercept = false;
+      params._objective_epsilon = 1e-6;
+      params._gradient_epsilon = 1e-5;
+      params._max_iterations = 150; // not expected to reach max iterations here
       Frame scoreTrain = null, scoreTest = null;
       try {
         params._solver = s;
@@ -1115,6 +1121,7 @@ public class GLMBasicTestBinomial extends TestUtil {
         try {
           params._solver = s;
           params._valid = fTest._key;
+          params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
           System.out.println("SOLVER = " + s);
           try {
             model = new GLM(params,Key.<GLMModel>make("prostate_model")).trainModel().get();
@@ -1122,6 +1129,7 @@ public class GLMBasicTestBinomial extends TestUtil {
             assertTrue(iae.getMessage().contains("Test/Validation dataset is missing weights column"));
           }
           params._valid = null;
+          params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
           model = new GLM(params,Key.<GLMModel>make("prostate_model")).trainModel().get();
           HashMap<String, Double> coefs = model.coefficients();
           System.out.println("coefs = " + coefs);
@@ -1262,6 +1270,7 @@ public class GLMBasicTestBinomial extends TestUtil {
     boolean naive_descent_exception_thrown = false;
     try {
       params._solver = Solver.COORDINATE_DESCENT_NAIVE;
+      params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       job0 = new GLM(params);
       GLMModel model = job0.trainModel().get();
       assertFalse("should've thrown, p-values only supported with IRLSM",true);
@@ -1271,12 +1280,14 @@ public class GLMBasicTestBinomial extends TestUtil {
     assertTrue(naive_descent_exception_thrown);
     try {
       params._solver = Solver.COORDINATE_DESCENT;
+      params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       job0 = new GLM(params);
       GLMModel model = job0.trainModel().get();
       assertFalse("should've thrown, p-values only supported with IRLSM",true);
     } catch(H2OModelBuilderIllegalArgumentException t) {
     }
     params._solver = Solver.IRLSM;
+    params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
     try {
       params._lambda = new double[]{1};
       job0 = new GLM(params);
@@ -1286,6 +1297,7 @@ public class GLMBasicTestBinomial extends TestUtil {
     }
     params._lambda_search = false;
     params._lambda = new double[]{0};
+    params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
     GLM job = new GLM(params);
     GLMModel model = null;
     Frame predictTrain = null;
@@ -1372,6 +1384,7 @@ public class GLMBasicTestBinomial extends TestUtil {
 //    GLEASON      0.91750972  0.1963285  4.67333842 2.963429e-06
 
     params._standardize = true;
+    params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
 
     job = new GLM(params);
     try {

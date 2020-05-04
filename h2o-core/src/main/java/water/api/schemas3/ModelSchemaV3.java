@@ -78,8 +78,10 @@ public class ModelSchemaV3<
     this.have_mojo = m.haveMojo();
     parameters = createParametersSchema();
     parameters.fillFromImpl(m._parms);
-    input_parameters = createParametersSchema();
-    input_parameters.fillFromImpl(m._input_parms);
+    if (m._input_parms != null) {
+      input_parameters = createParametersSchema();
+      input_parameters.fillFromImpl(m._input_parms);
+    }
     parameters.model_id = model_id;
 
     output = createOutputSchema();

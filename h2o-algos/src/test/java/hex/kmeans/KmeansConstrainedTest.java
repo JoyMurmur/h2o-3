@@ -1,5 +1,6 @@
 package hex.kmeans;
 
+import hex.Model;
 import hex.ModelMetricsClustering;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -242,6 +243,7 @@ public class KmeansConstrainedTest extends TestUtil {
             }
 
             parms._standardize = false;
+            parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
             KMeans job2 = new KMeans(parms);
             kmm2 = (KMeansModel) Scope.track_generic(job2.trainModel().get());
 

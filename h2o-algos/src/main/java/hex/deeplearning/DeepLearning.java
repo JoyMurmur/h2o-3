@@ -264,7 +264,7 @@ public class DeepLearning extends ModelBuilder<DeepLearningModel,DeepLearningMod
           throw new H2OIllegalArgumentException("Model type must be the same as for the checkpointed model.");
 
         //READ ONLY
-        DeepLearningParameters.Sanity.checkIfParameterChangeAllowed(previous._parms, _parms);
+        DeepLearningParameters.Sanity.checkIfParameterChangeAllowed(previous._input_parms, _parms);
 
         DataInfo dinfo;
         try {
@@ -516,8 +516,8 @@ public class DeepLearning extends ModelBuilder<DeepLearningModel,DeepLearningMod
     }
 
     public void initActualParamValues() {
-      EffectiveParametersUtils.initStoppingMetric(_parms, isClassifier(), isSupervised());
-      EffectiveParametersUtils.initCategoricalEncoding(_parms, _nclass, Model.Parameters.CategoricalEncodingScheme.OneHotInternal);
+      EffectiveParametersUtils.initStoppingMetric(_parms, isClassifier());
+      EffectiveParametersUtils.initCategoricalEncoding(_parms, Model.Parameters.CategoricalEncodingScheme.OneHotInternal);
     }
 
     /**

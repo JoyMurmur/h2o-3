@@ -1,5 +1,6 @@
 package hex.kmeans;
 
+import hex.Model;
 import hex.ModelMetrics;
 import hex.ModelMetricsClustering;
 import hex.SplitFrame;
@@ -134,6 +135,7 @@ public class KMeansTest extends TestUtil {
       parms._max_iterations = 20;
       parms._standardize = true;
       parms._estimate_k = true;
+      KMeansModel.KMeansParameters parmsInitialClone = (KMeansModel.KMeansParameters) parms.clone();
       kmm = doSeed(parms,0);
 
       for (int i=0;i<kmm._output._centers_raw.length;++i) {
@@ -142,13 +144,14 @@ public class KMeansTest extends TestUtil {
       Assert.assertEquals("expected 5 centroids", 5, kmm._output._k[kmm._output._k.length-1]);
       double auto = kmm._output._tot_withinss;
 
-      parms._estimate_k = false;
-      parms._k = kmm._output._k[kmm._output._k.length-1];
+      parmsInitialClone._estimate_k = false;
+      parmsInitialClone._k = kmm._output._k[kmm._output._k.length-1];
 
       Random rnd = RandomUtils.getRNG(1234);
       double manual = 0;
       double N = 10;
       for (int i=0;i<N;++i) {
+        parms = (KMeansModel.KMeansParameters) parmsInitialClone.clone();
         kmm2 = doSeed(parms, rnd.nextLong());
         manual += kmm2._output._tot_withinss;
         Assert.assertEquals("expected 5 centroids", 5, kmm2._output._k[kmm2._output._k.length - 1]);
@@ -244,10 +247,16 @@ public class KMeansTest extends TestUtil {
       parms._standardize = true;
       parms._max_iterations = 10;
       parms._init = KMeans.Initialization.Random;
+      parms._categorical_encoding = Model.Parameters.CategoricalEncodingScheme.AUTO;
+      parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
 
       doSeed(parms,341534765239617L).delete(); // Seed triggers an empty cluster on iris
+      parms._categorical_encoding = Model.Parameters.CategoricalEncodingScheme.AUTO;
+      parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       doSeed(parms,341579128111283L).delete(); // Seed triggers an empty cluster on iris
       for( int i=0; i<10; i++ )
+        parms._categorical_encoding = Model.Parameters.CategoricalEncodingScheme.AUTO;
+        parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
         doSeed(parms,System.nanoTime()).delete();
 
     } finally {
@@ -308,6 +317,8 @@ public class KMeansTest extends TestUtil {
       double[][] exp6 = new double[][]{ d(0, 0, 1), d(0, 1, 0), d(1, 0, 0), };
 
       for( int i=0; i<10; i++ ) {
+        parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
+        parms._categorical_encoding = Model.Parameters.CategoricalEncodingScheme.AUTO;
         KMeansModel kmm = doSeed(parms, System.nanoTime());
         Assert.assertTrue(kmm._output._centers_raw.length == 3);
 
@@ -343,6 +354,8 @@ public class KMeansTest extends TestUtil {
       parms._init = KMeans.Initialization.Furthest;
 
       for( int i=0; i<10; i++ ) {
+        parms._categorical_encoding = Model.Parameters.CategoricalEncodingScheme.AUTO;
+        parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
         KMeansModel kmm = doSeed(parms, System.nanoTime());
         Assert.assertTrue(kmm._output._centers_raw.length == 2);
         fr2=kmm.score(fr);

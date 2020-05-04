@@ -12,10 +12,8 @@ public class EffectiveParametersUtils {
         Model.Parameters params
     ) {
         if (params._fold_assignment == Model.Parameters.FoldAssignmentScheme.AUTO) {
-            if (params._nfolds > 0 && params._fold_column == null){
+            if (params._nfolds > 0 && params._fold_column == null) {
                 params._fold_assignment = Model.Parameters.FoldAssignmentScheme.Random;
-            } else {
-                params._fold_assignment = null;
             }
         }
     }
@@ -30,8 +28,7 @@ public class EffectiveParametersUtils {
     
     public static void initStoppingMetric(
             Model.Parameters params,
-            boolean isClassifier,
-            boolean isAutoencoder
+            boolean isClassifier
     ) {
         if (params._stopping_metric == ScoreKeeper.StoppingMetric.AUTO) {
             if (params._stopping_rounds == 0) {
@@ -39,8 +36,6 @@ public class EffectiveParametersUtils {
             } else {
                 if (isClassifier) {
                     params._stopping_metric = ScoreKeeper.StoppingMetric.logloss;
-                } else if (isAutoencoder) {
-                    params._stopping_metric = ScoreKeeper.StoppingMetric.MSE;
                 } else {
                     params._stopping_metric = ScoreKeeper.StoppingMetric.deviance;
                 }
@@ -64,14 +59,10 @@ public class EffectiveParametersUtils {
 
     public static void initCategoricalEncoding(
             Model.Parameters params,
-            int nclasses,
             Model.Parameters.CategoricalEncodingScheme scheme
     ) {
         if (params._categorical_encoding == Model.Parameters.CategoricalEncodingScheme.AUTO) {
-            if (nclasses == 1)
-                params._categorical_encoding = null;
-            else
-                params._categorical_encoding = scheme;
+            params._categorical_encoding = scheme;
         }
     }
 }

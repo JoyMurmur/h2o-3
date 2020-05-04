@@ -2,6 +2,7 @@ package hex.glm;
 
 import hex.DataInfo;
 import hex.GLMMetrics;
+import hex.Model;
 import hex.ModelMetricsRegressionGLM;
 import hex.glm.GLMModel.GLMParameters;
 import hex.glm.GLMModel.GLMParameters.Family;
@@ -139,15 +140,15 @@ public class GLMBasicTestRegression extends TestUtil {
 
   @Test public void  testWeights() {
     GLMModel model1 = null, model2 = null;
-    GLMParameters parms = new GLMParameters(Family.gaussian);
-    parms._train = _weighted._key;
-    parms._ignored_columns = new String[]{_weighted.name(0)};
-    parms._response_column = _weighted.name(1);
-    parms._standardize = true;
-    parms._objective_epsilon = 0;
-    parms._gradient_epsilon = 1e-10;
-    parms._max_iterations = 1000;
     for (Solver s : GLMParameters.Solver.values()) {
+      GLMParameters parms = new GLMParameters(Family.gaussian);
+      parms._train = _weighted._key;
+      parms._ignored_columns = new String[]{_weighted.name(0)};
+      parms._response_column = _weighted.name(1);
+      parms._standardize = true;
+      parms._objective_epsilon = 0;
+      parms._gradient_epsilon = 1e-10;
+      parms._max_iterations = 1000;
 //      if(s != Solver.IRLSM)continue; //fixme: does not pass for other than IRLSM now
       if (s.equals(Solver.GRADIENT_DESCENT_SQERR) || s.equals(Solver.GRADIENT_DESCENT_LH))
         continue; // only used for ordinal regression
@@ -160,14 +161,15 @@ public class GLMBasicTestRegression extends TestUtil {
         parms._train = _weighted._key;
         parms._solver = s;
         parms._weights_column = "weights";
+        GLMParameters parmsInitialClone = (GLMParameters) parms.clone(); 
         model1 = new GLM(parms).trainModel().get();
         HashMap<String, Double> coefs1 = model1.coefficients();
         System.out.println("coefs1 = " + coefs1);
-        parms._train = _upsampled._key;
-        parms._weights_column = null;
-        parms._lambda = new double[]{1e-5};
-        parms._alpha = null;
-        model2 = new GLM(parms).trainModel().get();
+        parmsInitialClone._train = _upsampled._key;
+        parmsInitialClone._weights_column = null;
+        parmsInitialClone._lambda = new double[]{1e-5};
+        parmsInitialClone._alpha = null;
+        model2 = new GLM(parmsInitialClone).trainModel().get();
         HashMap<String, Double> coefs2 = model2.coefficients();
         System.out.println("coefs2 = " + coefs2);
         System.out.println("mse1 = " + model1._output._training_metrics.mse() + ", mse2 = " + model2._output._training_metrics.mse());
@@ -334,23 +336,23 @@ public class GLMBasicTestRegression extends TestUtil {
     double [] resDev  = new double[]{1469,755.4,770.8,908.9,1465,915.7};
     double [] varPow  = new double[]{   0,  1.0, 1.25,  1.5,1.75,  2.0};
 
-    GLMParameters parms = new GLMParameters(Family.tweedie);
-    parms._train = _earinf._key;
-    parms._ignored_columns = new String[]{};
-    // "response_column":"Claims","offset_column":"logInsured"
-    parms._response_column = "Infections";
-    parms._standardize = false;
-    parms._lambda = new double[]{0};
-    parms._alpha = new double[]{0};
-    parms._gradient_epsilon = 1e-10;
-    parms._max_iterations = 1000;
-    parms._objective_epsilon = 0;
-    parms._beta_epsilon = 1e-6;
     for(int x = 0; x < varPow.length; ++x) {
-      double p = varPow[x];
-      parms._tweedie_variance_power = p;
-      parms._tweedie_link_power = 1 - p;
       for (Solver s : /*new Solver[]{Solver.IRLSM}*/ GLMParameters.Solver.values()) {
+        GLMParameters parms = new GLMParameters(Family.tweedie);
+        parms._train = _earinf._key;
+        parms._ignored_columns = new String[]{};
+        // "response_column":"Claims","offset_column":"logInsured"
+        parms._response_column = "Infections";
+        parms._standardize = false;
+        parms._lambda = new double[]{0};
+        parms._alpha = new double[]{0};
+        parms._gradient_epsilon = 1e-10;
+        parms._max_iterations = 1000;
+        parms._objective_epsilon = 0;
+        parms._beta_epsilon = 1e-6;
+        double p = varPow[x];
+        parms._tweedie_variance_power = p;
+        parms._tweedie_link_power = 1 - p;
         if(s == Solver.COORDINATE_DESCENT_NAIVE || s.equals(Solver.GRADIENT_DESCENT_LH)
                 || s.equals(Solver.GRADIENT_DESCENT_SQERR)) continue; // ignore for now, has trouble with zero columns
         try {
@@ -396,23 +398,23 @@ public class GLMBasicTestRegression extends TestUtil {
 //    Residual Deviance: 579.5 	AIC: 805.9
     String [] cfs1 = new String [] { "Intercept", "Merit.1", "Merit.2", "Merit.3", "Class.2", "Class.3", "Class.4", "Class.5"};
     double [] vals = new double [] { -2.0357,     -0.1378,  -0.2207,  -0.4930,   0.2998,   0.4691,   0.5259,    0.2156};
-      GLMParameters parms = new GLMParameters(Family.poisson);
-      parms._train = _canCarTrain._key;
-      parms._ignored_columns = new String[]{"Insured", "Premium", "Cost"};
-      // "response_column":"Claims","offset_column":"logInsured"
-      parms._response_column = "Claims";
-      parms._offset_column = "logInsured";
-      parms._standardize = false;
-      parms._lambda = new double[]{0};
-      parms._alpha = new double[]{0};
-      parms._objective_epsilon = 0;
-      parms._beta_epsilon = 1e-6;
-      parms._gradient_epsilon = 1e-10;
-      parms._max_iterations = 1000;
       for (Solver s : GLMParameters.Solver.values()) {
         if(s == Solver.COORDINATE_DESCENT_NAIVE || s.equals(Solver.GRADIENT_DESCENT_LH)
         || s.equals(Solver.GRADIENT_DESCENT_SQERR)) continue; // skip for now, does not handle zero columns (introduced by extra missing bucket with no missing in the dataset)
         try {
+          GLMParameters parms = new GLMParameters(Family.poisson);
+          parms._train = _canCarTrain._key;
+          parms._ignored_columns = new String[]{"Insured", "Premium", "Cost"};
+          // "response_column":"Claims","offset_column":"logInsured"
+          parms._response_column = "Claims";
+          parms._offset_column = "logInsured";
+          parms._standardize = false;
+          parms._lambda = new double[]{0};
+          parms._alpha = new double[]{0};
+          parms._objective_epsilon = 0;
+          parms._beta_epsilon = 1e-6;
+          parms._gradient_epsilon = 1e-10;
+          parms._max_iterations = 1000;
           parms._solver = s;
           model = new GLM(parms).trainModel().get();
           HashMap<String, Double> coefs = model.coefficients();
@@ -655,6 +657,7 @@ public class GLMBasicTestRegression extends TestUtil {
     boolean naive_descent_exception_thrown = false;
     try {
       params._solver = Solver.COORDINATE_DESCENT_NAIVE;
+      params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       new GLM(params).trainModel().get();
       assertFalse("should've thrown, p-values only supported with IRLSM",true);
     } catch (H2OIllegalArgumentException t) {
@@ -663,11 +666,13 @@ public class GLMBasicTestRegression extends TestUtil {
     assertTrue(naive_descent_exception_thrown);
     try {
       params._solver = Solver.COORDINATE_DESCENT;
+      params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
       new GLM(params).trainModel().get();
       assertFalse("should've thrown, p-values only supported with IRLSM",true);
     } catch(H2OModelBuilderIllegalArgumentException t) {
     }
     params._solver = Solver.IRLSM;
+    params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
     GLM glm = new GLM(params);
     try {
       params._lambda = new double[]{1};
@@ -763,6 +768,7 @@ public class GLMBasicTestRegression extends TestUtil {
 //    GLEASON      0.91750972  0.1963285  4.67333842 2.963429e-06
 
     params._standardize = true;
+    params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
 
     try {
       model = new GLM(params).trainModel().get();
@@ -802,6 +808,7 @@ public class GLMBasicTestRegression extends TestUtil {
     params._train = _airlines._key;
     params._response_column = "IsDepDelayed";
     params._ignored_columns = new String[]{"IsDepDelayed_REC"};
+    params._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
     try {
       model = new GLM(params).trainModel().get();
       String[] names_expected = new String[] {"Intercept","fYearf1988","fYearf1989","fYearf1990","fYearf1991","fYearf1992","fYearf1993","fYearf1994","fYearf1995","fYearf1996","fYearf1997","fYearf1998","fYearf1999","fYearf2000","fDayofMonthf10","fDayofMonthf11","fDayofMonthf12","fDayofMonthf13","fDayofMonthf14","fDayofMonthf15","fDayofMonthf16","fDayofMonthf17","fDayofMonthf18","fDayofMonthf19","fDayofMonthf2","fDayofMonthf20","fDayofMonthf21","fDayofMonthf22","fDayofMonthf23","fDayofMonthf24", "fDayofMonthf25",  "fDayofMonthf26",  "fDayofMonthf27",  "fDayofMonthf28",  "fDayofMonthf29" , "fDayofMonthf3"  ,   "fDayofMonthf30" , "fDayofMonthf31",  "fDayofMonthf4", "fDayofMonthf5", "fDayofMonthf6", "fDayofMonthf7"  ,   "fDayofMonthf8" ,  "fDayofMonthf9"  , "fDayOfWeekf2" ,   "fDayOfWeekf3"   , "fDayOfWeekf4"  ,  "fDayOfWeekf5",      "fDayOfWeekf6" ,   "fDayOfWeekf7"  ,  "DepTime",    "ArrTime",    "UniqueCarrierCO",  "UniqueCarrierDL",   "UniqueCarrierHP", "UniqueCarrierPI", "UniqueCarrierTW" ,"UniqueCarrierUA" ,"UniqueCarrierUS", "UniqueCarrierWN" ,  "OriginABQ",  "OriginACY",  "OriginALB",  "OriginATL",  "OriginAUS",  "OriginAVP",    "OriginBDL",  "OriginBGM",  "OriginBHM",  "OriginBNA",  "OriginBOS",  "OriginBTV",    "OriginBUF",  "OriginBUR",  "OriginBWI",  "OriginCAE",  "OriginCHO",  "OriginCHS",    "OriginCLE",  "OriginCLT",  "OriginCMH",  "OriginCOS",  "OriginCRW",  "OriginCVG",    "OriginDAY",  "OriginDCA",  "OriginDEN",  "OriginDFW",  "OriginDSM",  "OriginDTW",    "OriginERI",  "OriginEWR",  "OriginFLL",  "OriginGSO",  "OriginHNL",  "OriginIAD",    "OriginIAH",  "OriginICT",  "OriginIND",  "OriginISP",  "OriginJAX",  "OriginJFK",   "OriginLAS",  "OriginLAX",  "OriginLEX",  "OriginLGA",  "OriginLIH",  "OriginLYH",   "OriginMCI",  "OriginMCO",  "OriginMDT",  "OriginMDW",  "OriginMFR",  "OriginMHT",   "OriginMIA",  "OriginMKE",  "OriginMLB",  "OriginMRY",  "OriginMSP",  "OriginMSY",   "OriginMYR",  "OriginOAK",  "OriginOGG",  "OriginOMA",  "OriginORD",  "OriginORF",   "OriginPBI",  "OriginPHF",  "OriginPHL",  "OriginPHX",  "OriginPIT",  "OriginPSP",   "OriginPVD",  "OriginPWM",  "OriginRDU",  "OriginRIC",  "OriginRNO",  "OriginROA",   "OriginROC",  "OriginRSW",  "OriginSAN",  "OriginSBN",  "OriginSCK",  "OriginSDF",   "OriginSEA",  "OriginSFO",  "OriginSJC",  "OriginSJU",  "OriginSLC",  "OriginSMF",   "OriginSNA",  "OriginSRQ",  "OriginSTL",  "OriginSTX",  "OriginSWF",  "OriginSYR",   "OriginTLH",  "OriginTPA",  "OriginTRI",  "OriginTUS",  "OriginTYS",  "OriginUCA",   "DestABQ",    "DestACY",    "DestALB",    "DestATL",    "DestAVP",    "DestBDL",     "DestBGM",    "DestBNA",    "DestBOS",    "DestBTV",    "DestBUF",    "DestBUR",     "DestBWI",    "DestCAE",    "DestCAK",    "DestCHA",    "DestCHS",    "DestCLE",     "DestCLT",    "DestCMH",    "DestDAY",    "DestDCA",    "DestDEN",    "DestDFW",     "DestDTW",    "DestELM",    "DestERI",    "DestEWR",    "DestFAT",    "DestFAY",     "DestFLL",    "DestFNT",    "DestGEG",    "DestGRR",    "DestGSO",    "DestGSP",     "DestHNL",    "DestHTS",    "DestIAD",    "DestIAH",    "DestICT",    "DestIND",     "DestISP",    "DestJAX",    "DestJFK",    "DestKOA",    "DestLAS",    "DestLAX",     "DestLEX",    "DestLGA",    "DestLIH",    "DestLYH",    "DestMCI",    "DestMCO",     "DestMDT",    "DestMDW",    "DestMHT",    "DestMIA",    "DestMRY",    "DestMSY",     "DestOAJ",    "DestOAK",    "DestOGG",    "DestOMA",    "DestORD",    "DestORF",     "DestORH",    "DestPBI",    "DestPDX",    "DestPHF",    "DestPHL",    "DestPHX",     "DestPIT",    "DestPSP",    "DestPVD",    "DestRDU",    "DestRIC",    "DestRNO",     "DestROA",    "DestROC",    "DestRSW",    "DestSAN",    "DestSCK",    "DestSDF",     "DestSEA",    "DestSFO",    "DestSJC",    "DestSMF",    "DestSNA",    "DestSTL",     "DestSWF",    "DestSYR",    "DestTOL",    "DestTPA",    "DestTUS",    "DestUCA",     "Distance"};

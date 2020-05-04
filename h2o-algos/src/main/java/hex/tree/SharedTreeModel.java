@@ -635,23 +635,27 @@ public abstract class SharedTreeModel<
   protected boolean binomialOpt() { return true; }
 
   @Override protected CategoricalEncoding getGenModelEncoding() {
-    switch (_parms._categorical_encoding) {
-      case AUTO:
-      case Enum:
-      case SortByResponse:
+    if (_parms._categorical_encoding == null) {
         return CategoricalEncoding.AUTO;
-      case OneHotExplicit:
-        return CategoricalEncoding.OneHotExplicit;
-      case Binary:
-        return CategoricalEncoding.Binary;
-      case EnumLimited:
-        return CategoricalEncoding.EnumLimited;
-      case Eigen:
-        return CategoricalEncoding.Eigen;
-      case LabelEncoder:
-        return CategoricalEncoding.LabelEncoder;
-      default:
-        return null;
+    } else {
+      switch (_parms._categorical_encoding) {
+        case AUTO:
+        case Enum:
+        case SortByResponse:
+            return CategoricalEncoding.AUTO;
+        case OneHotExplicit:
+            return CategoricalEncoding.OneHotExplicit;
+        case Binary:
+            return CategoricalEncoding.Binary;
+        case EnumLimited:
+            return CategoricalEncoding.EnumLimited;
+        case Eigen:
+            return CategoricalEncoding.Eigen;
+        case LabelEncoder:
+            return CategoricalEncoding.LabelEncoder;
+        default:
+            return null;
+      }
     }
   }
   

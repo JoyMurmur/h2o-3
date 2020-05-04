@@ -104,11 +104,11 @@ public class GBMModel extends SharedTreeModelWithContributions<GBMModel, GBMMode
     super.initActualParamValues();
     EffectiveParametersUtils.initFoldAssignment(_parms);
     EffectiveParametersUtils.initHistogramType(_parms);
+    EffectiveParametersUtils.initCategoricalEncoding(_parms, Parameters.CategoricalEncodingScheme.Enum);
   }
   
   public void initActualParamValuesAfterOutputSetup(int nclasses, boolean isClassifier) {
-    EffectiveParametersUtils.initCategoricalEncoding(_parms, nclasses, Parameters.CategoricalEncodingScheme.Enum);
-    EffectiveParametersUtils.initStoppingMetric(_parms, isClassifier, false);
+    EffectiveParametersUtils.initStoppingMetric(_parms, isClassifier);
     EffectiveParametersUtils.initDistribution(_parms, nclasses);
   }
 

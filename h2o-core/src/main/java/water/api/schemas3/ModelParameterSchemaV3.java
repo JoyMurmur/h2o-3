@@ -79,8 +79,9 @@ public class ModelParameterSchemaV3 extends SchemaV3<Iced, ModelParameterSchemaV
       this.default_value = FieldMetadata.consValue(o);
       
       if (input_schema != null) {
-      o = f.get(input_schema);
-      this.input_value = FieldMetadata.consValue(o);}
+        o = f.get(input_schema);
+        this.input_value = FieldMetadata.consValue(o);
+      }
 
       o = f.get(schema);
       this.actual_value = FieldMetadata.consValue(o);

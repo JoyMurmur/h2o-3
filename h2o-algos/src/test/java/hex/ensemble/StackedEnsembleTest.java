@@ -379,7 +379,7 @@ public class StackedEnsembleTest extends TestUtil {
         seParams._response_column = target;
         seParams._base_models = grid.getModelKeys();
         seParams._seed = seed;
-
+        StackedEnsembleParameters seParamsInitialClone = (StackedEnsembleParameters) seParams.clone();
         //running a first blending SE without keeping predictions
         seParams._keep_base_model_predictions = false;
         StackedEnsemble seJob = new StackedEnsemble(seParams);
@@ -388,6 +388,7 @@ public class StackedEnsembleTest extends TestUtil {
         Assert.assertNull(seModel._output._base_model_predictions_keys);
 
         //running another SE, but this time caching predictions
+        seParams = (StackedEnsembleParameters) seParamsInitialClone.clone();  
         seParams._keep_base_model_predictions = true;
         seJob = new StackedEnsemble(seParams);
         seModel = seJob.trainModel().get();
@@ -401,6 +402,7 @@ public class StackedEnsembleTest extends TestUtil {
         }
 
         //running again another SE, caching predictions, and checking that no new prediction is created
+        seParams = (StackedEnsembleParameters) seParamsInitialClone.clone();
         seParams._keep_base_model_predictions = true;
         seJob = new StackedEnsemble(seParams);
         seModel = seJob.trainModel().get();
@@ -410,6 +412,7 @@ public class StackedEnsembleTest extends TestUtil {
         Assert.assertArrayEquals(first_se_pred_keys, seModel._output._base_model_predictions_keys);
 
         //running a last SE, with validation frame, and check that new predictions are added
+        seParams = (StackedEnsembleParameters) seParamsInitialClone.clone();
         seParams._keep_base_model_predictions = true;
         seParams._valid = valid._key;
         seJob = new StackedEnsemble(seParams);
@@ -611,6 +614,7 @@ public class StackedEnsembleTest extends TestUtil {
             seParams._seed = seed;
             seParams._keep_levelone_frame = keepLevelOneFrame;
             if (blending) seParams._blending = test._key;
+            StackedEnsembleModel.StackedEnsembleParameters seParamsInitialClone = (StackedEnsembleModel.StackedEnsembleParameters) seParams.clone();
             StackedEnsembleModel se1 = new StackedEnsemble(seParams).trainModel().get(); deletables.add(se1);
             Frame predictions = se1.score(test); deletables.add(predictions);
 
@@ -630,7 +634,7 @@ public class StackedEnsembleTest extends TestUtil {
 
             // building a new model would throw an exception if we deleted too much when deleting s1
             GBMModel gbm = new GBM(params).trainModel().get(); deletables.add(gbm);
-            StackedEnsembleModel se2 = new StackedEnsemble(seParams).trainModel().get(); deletables.add(se2);
+            StackedEnsembleModel se2 = new StackedEnsemble(seParamsInitialClone).trainModel().get(); deletables.add(se2);
         } finally {
             for (Lockable l: deletables) {
                 if (l instanceof Model) ((Model)l).deleteCrossValidationPreds();

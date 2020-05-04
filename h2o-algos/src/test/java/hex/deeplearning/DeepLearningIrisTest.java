@@ -1,5 +1,6 @@
 package hex.deeplearning;
 
+import hex.Model;
 import hex.ScoringInfo;
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters;
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.Activation;
@@ -211,6 +212,7 @@ public class DeepLearningIrisTest extends TestUtil {
 
                             // Train H2O
                             mymodel.delete();
+                            p._fold_assignment = Model.Parameters.FoldAssignmentScheme.AUTO;
                             DeepLearning dl = new DeepLearning(p);
                             mymodel = dl.trainModel().get();
                             Assert.assertTrue(mymodel.model_info().get_processed_total() == epoch * dl.train().numRows());

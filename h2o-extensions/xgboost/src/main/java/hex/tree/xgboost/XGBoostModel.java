@@ -237,22 +237,28 @@ public class XGBoostModel extends Model<XGBoostModel, XGBoostModel.XGBoostParame
     super.initActualParamValues();
     EffectiveParametersUtils.initFoldAssignment(_parms);
     _parms._backend = getActualBackend(_parms);
-    // tree_method parameter is evaluated according to https://github.com/h2oai/xgboost/blob/96f61fb3be8c4fa0e160dd6e82677dfd96a5a9a1/src/gbm/gbtree.cc#L127 + we don't 
-    // use external-memory data matrix feature in h2o 
+    // tree_method parameter is evaluated according to:
+    // https://github.com/h2oai/xgboost/blob/96f61fb3be8c4fa0e160dd6e82677dfd96a5a9a1/src/gbm/gbtree.cc#L127 
+    // + we don't use external-memory data matrix feature in h2o 
+    // + https://github.com/h2oai/h2o-3/blob/b68e544d8dac3c5c0ed16759e6bf7e8288573ab5/h2o-extensions/xgboost/src/main/java/hex/tree/xgboost/XGBoostModel.java#L348
     if ( _parms._tree_method == XGBoostModel.XGBoostParameters.TreeMethod.auto) {
-        if (H2O.getCloudSize() > 1) {
-          _parms._tree_method =  XGBoostModel.XGBoostParameters.TreeMethod.approx;
-        } else if (_parms.train().numRows() >= (4 << 20)) {
-          _parms._tree_method =  XGBoostModel.XGBoostParameters.TreeMethod.approx;
+      if (H2O.getCloudSize() > 1) {
+        if (_parms._monotone_constraints != null && _parms._booster != XGBoostParameters.Booster.gblinear && _parms._backend != XGBoostParameters.Backend.gpu) {
+          _parms._tree_method = XGBoostParameters.TreeMethod.hist;
         } else {
-          _parms._tree_method =  XGBoostModel.XGBoostParameters.TreeMethod.exact;
+          _parms._tree_method =  XGBoostModel.XGBoostParameters.TreeMethod.approx;
         }
+      } else if (_parms.train().numRows() >= (4 << 20)) {
+        _parms._tree_method =  XGBoostModel.XGBoostParameters.TreeMethod.approx;
+      } else {
+        _parms._tree_method =  XGBoostModel.XGBoostParameters.TreeMethod.exact;
+      }
     }
   }
 
   public void initActualParamValuesAfterOutputSetup(boolean isClassifier, int nclasses) {
-    EffectiveParametersUtils.initStoppingMetric(_parms, isClassifier, false);
-    EffectiveParametersUtils.initCategoricalEncoding(_parms, nclasses, Parameters.CategoricalEncodingScheme.OneHotInternal);
+    EffectiveParametersUtils.initStoppingMetric(_parms, isClassifier);
+    EffectiveParametersUtils.initCategoricalEncoding(_parms, Parameters.CategoricalEncodingScheme.OneHotInternal);
     EffectiveParametersUtils.initDistribution(_parms, nclasses);
     _parms._dmatrix_type = _output._sparse ? XGBoostModel.XGBoostParameters.DMatrixType.sparse : XGBoostModel.XGBoostParameters.DMatrixType.dense;
   }

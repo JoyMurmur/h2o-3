@@ -34,6 +34,7 @@ public class MakeGLMModelHandler extends Handler {
     for(int i = 0; i < beta.length; ++i)
       beta[i] = coefs.get(names[i]);
     GLMModel m = new GLMModel(args.dest != null?args.dest.key():Key.make(),model._parms,null, model._ymu, Double.NaN, Double.NaN, -1);
+    m.setInputParms(model._input_parms);
     DataInfo dinfo = model.dinfo();
     dinfo.setPredictorTransform(TransformType.NONE);
     m._output = new GLMOutput(model.dinfo(),model._output._names,model._output._column_types,  model._output._domains, model._output.coefficientNames(), model._output._binomial, beta);

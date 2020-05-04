@@ -76,10 +76,7 @@ public class KMeansModel extends ClusteringModel<KMeansModel,KMeansModel.KMeansP
   public void initActualParamValues() {
     super.initActualParamValues();
     EffectiveParametersUtils.initFoldAssignment(_parms);
-  }
-  
-  public void initActualParamValues(int nclasses) {
-    EffectiveParametersUtils.initCategoricalEncoding(_parms, nclasses, Model.Parameters.CategoricalEncodingScheme.Enum);
+    EffectiveParametersUtils.initCategoricalEncoding(_parms, Model.Parameters.CategoricalEncodingScheme.Enum);
   }
 
   @Override public ModelMetrics.MetricBuilder makeMetricBuilder(String[] domain) {

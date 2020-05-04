@@ -104,7 +104,6 @@ public class GLMBasicTestMultinomial extends TestUtil {
   
   @Test
   public void testCovtypeNoIntercept(){
-    GLMParameters params = new GLMParameters(Family.multinomial);
     GLMModel model = null;
     Frame preds = null;
     Vec weights = _covtype.anyVec().makeCon(1);
@@ -113,20 +112,21 @@ public class GLMBasicTestMultinomial extends TestUtil {
     f.add("weights",weights);
     DKV.put(f);
     try {
-      params._response_column = "C55";
-      params._train = k;
-      params._valid = _covtype._key;
-      params._objective_epsilon = 1e-6;
-      params._beta_epsilon = 1e-4;
-      params._weights_column = "weights";
-      params._missing_values_handling = GLMModel.GLMParameters.MissingValuesHandling.Skip;
-      params._intercept = false;
       double[] alpha = new double[]{0,.5,.1};
-      Solver s = Solver.L_BFGS;
-      System.out.println("solver = " + s);
-      params._solver = s;
-      params._max_iterations = 5000;
       for (int i = 0; i < alpha.length; ++i) {
+        GLMParameters params = new GLMParameters(Family.multinomial);
+        params._response_column = "C55";
+        params._train = k;
+        params._valid = _covtype._key;
+        params._objective_epsilon = 1e-6;
+        params._beta_epsilon = 1e-4;
+        params._weights_column = "weights";
+        params._missing_values_handling = GLMModel.GLMParameters.MissingValuesHandling.Skip;
+        params._intercept = false;
+        Solver s = Solver.L_BFGS;
+        System.out.println("solver = " + s);
+        params._solver = s;
+        params._max_iterations = 5000;
         params._alpha = new double[]{alpha[i]};
 //        params._lambda[0] = lambda[i];
         model = new GLM(params).trainModel().get();
@@ -157,7 +157,6 @@ public class GLMBasicTestMultinomial extends TestUtil {
 
   @Test
   public void testCovtypeBasic(){
-    GLMParameters params = new GLMParameters(Family.multinomial);
     GLMModel model = null;
     Frame preds = null;
     Vec weights = _covtype.anyVec().makeCon(1);
@@ -166,19 +165,20 @@ public class GLMBasicTestMultinomial extends TestUtil {
     f.add("weights",weights);
     DKV.put(f);
     try {
-      params._response_column = "C55";
-      params._train = k;
-      params._valid = _covtype._key;
-      params._lambda = new double[]{4.881e-05};
-      params._alpha = new double[]{1};
-      params._objective_epsilon = 1e-6;
-      params._beta_epsilon = 1e-4;
-      params._weights_column = "weights";
-      params._missing_values_handling = GLMModel.GLMParameters.MissingValuesHandling.Skip;
-      double[] alpha = new double[]{1};
-      double[] expected_deviance = new double[]{25499.76};
-      double[] lambda = new double[]{2.544750e-05};
       for (Solver s : new Solver[]{Solver.IRLSM, Solver.COORDINATE_DESCENT, Solver.L_BFGS}) {
+        GLMParameters params = new GLMParameters(Family.multinomial);
+        params._response_column = "C55";
+        params._train = k;
+        params._valid = _covtype._key;
+        params._lambda = new double[]{4.881e-05};
+        params._alpha = new double[]{1};
+        params._objective_epsilon = 1e-6;
+        params._beta_epsilon = 1e-4;
+        params._weights_column = "weights";
+        params._missing_values_handling = GLMModel.GLMParameters.MissingValuesHandling.Skip;
+        double[] alpha = new double[]{1};
+        double[] expected_deviance = new double[]{25499.76};
+        double[] lambda = new double[]{2.544750e-05};
         System.out.println("solver = " + s);
         params._solver = s;
         params._max_iterations = params._solver == Solver.L_BFGS?300:10;
@@ -441,6 +441,7 @@ public class GLMBasicTestMultinomial extends TestUtil {
       params._max_iterations = 500;
       params._solver = Solver.L_BFGS;
       params._missing_values_handling = GLMModel.GLMParameters.MissingValuesHandling.Skip;
+      GLMParameters paramsInitClone = (GLMParameters) params.clone();
 //      params._lambda_search = true;
       model = new GLM(params).trainModel().get();
       assertEquals(covtype_copy.numRows()-3-1,model._nullDOF);
@@ -457,8 +458,8 @@ public class GLMBasicTestMultinomial extends TestUtil {
       preds.delete();
       preds = null;
       // now run the same on the subset
-      params._train = covtype_subset._key;
-      model = new GLM(params).trainModel().get();
+      paramsInitClone._train = covtype_subset._key;
+      model = new GLM(paramsInitClone).trainModel().get();
       assertEquals(covtype_copy.numRows()-3-1,model._nullDOF);
       System.out.println(model._output._training_metrics);
       System.out.println(model._output._validation_metrics);
