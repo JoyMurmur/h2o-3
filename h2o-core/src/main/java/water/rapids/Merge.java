@@ -25,6 +25,16 @@ public class Merge {
 
     return sort(fr, cols, ascending); // default is to sort in ascending order
   }
+  
+  public static Frame sort(final Frame frame, final int[] columns, final boolean ascending){
+    final int[] sortOrder = new int[columns.length];
+    if(ascending){
+      Arrays.fill(sortOrder,1);
+    }
+    
+    return sort(frame, columns, sortOrder);
+  }
+  
   // Radix-sort a Frame using the given columns as keys.
   // This is a fully distributed and parallel sort.
   // It is not currently an in-place sort, so the data is doubled and a sorted copy is returned.
